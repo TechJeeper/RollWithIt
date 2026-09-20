@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "vite build && node -e \"fs.copyFileSync('dist/index.html', 'index.html'); fs.cpSync('dist/assets', 'assets', {recursive: true})\"",
     "preview": "vite preview",
     "deploy": "vite build && gh-pages -d dist"
   },
