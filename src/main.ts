@@ -112,6 +112,7 @@ function mount() {
             <div id="fontsize-slider-container" style="display:none">
               ${slider('fontSize', 'Text size', state.pattern.fontSize, 6, 36, 1)}
             </div>
+            ${slider('designDepth', 'Design depth mm', state.dimensions.relief, 0.2, 3.0, 0.05)}
           </div>
 
           <label class="check"><input type="checkbox" id="invert" ${state.pattern.invert ? 'checked' : ''}/> Invert pattern</label>
@@ -146,8 +147,8 @@ function mount() {
               ${numberField('length', 'Length', state.dimensions.length, 40, 80, 0.1)}
               ${numberField('driveSize', 'Square drive', state.dimensions.driveSize, 8, 16, 0.1)}
               ${numberField('driveDepth', 'Drive depth', state.dimensions.driveDepth, 4, 20, 0.1)}
-              ${numberField('relief', 'Relief height', state.dimensions.relief, 0.4, 2.5, 0.05)}
-              ${numberField('clearance', 'Female clearance', state.dimensions.clearance, 0.1, 1, 0.05)}
+              ${numberField('relief', 'Design depth', state.dimensions.relief, 0.2, 3.0, 0.05)}
+              ${numberField('clearance', 'Mating tolerance', state.dimensions.clearance, 0.05, 1.0, 0.05)}
               ${numberField('bevel', 'Edge soft (≥0.45)', state.dimensions.bevel, 0.15, 1.2, 0.05)}
             </div>
             <div class="field">
@@ -161,7 +162,7 @@ function mount() {
                   .join('')}
               </select>
             </div>
-            <p class="hint">Defaults match remakes of the MakerSpace embosser: Ø30 × 60 mm blank, 12.2 mm square drive × 10 mm deep, 1.2 mm relief. Exported rollers lie on their side so the pattern faces you in the slicer.</p>
+            <p class="hint">Defaults match the MakerSpace embosser: Ø30 × 60 mm blank, 12.2 mm drive, 1.2 mm design depth. <em>Mating tolerance</em> controls the fit gap between male &amp; female surfaces (0.15–0.25 mm recommended for tight, crisp embossing).</p>
             <div class="tool-row">
               <button class="btn btn-primary" id="btn-rebuild" type="button">Rebuild preview</button>
               <button class="btn btn-secondary" id="btn-reset" type="button">Reset defaults</button>
@@ -366,6 +367,11 @@ function mount() {
   bindSlider('fontSize', (v) => {
     state.pattern.fontSize = v
   })
+  bindSlider('designDepth', (v) => {
+    state.dimensions.relief = v
+    const reliefNumInput = app.querySelector<HTMLInputElement>('#relief')
+    if (reliefNumInput) reliefNumInput.value = String(v)
+  })
 
   function bindSlider(id: string, apply: (v: number) => void) {
     const root = app!
@@ -394,6 +400,12 @@ function mount() {
     const input = app.querySelector<HTMLInputElement>(`#${key}`)!
     input.addEventListener('change', () => {
       state.dimensions[key] = Number(input.value)
+      if (key === 'relief') {
+        const depthSlider = app.querySelector<HTMLInputElement>('#designDepth')
+        const depthVal = app.querySelector<HTMLElement>('[data-value="designDepth"]')
+        if (depthSlider) depthSlider.value = input.value
+        if (depthVal) depthVal.textContent = Number(input.value).toFixed(2)
+      }
       redrawPattern()
       scheduleRebuild()
     })

@@ -60,7 +60,7 @@ export const DEFAULT_STATE: AppState = {
     driveSize: 12.2,
     driveDepth: 10,
     relief: 1.2,
-    clearance: 0.4,
+    clearance: 0.2,
     edgeFillet: 1,
     bevel: 0.35,
   },
