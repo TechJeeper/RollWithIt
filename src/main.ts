@@ -45,7 +45,10 @@ function mount() {
 
   app.innerHTML = `
     <header class="hero">
-      <h1 class="brand">RollWithIt</h1>
+      <div>
+        <p class="brand-sub">TechJeeper Designs</p>
+        <h1 class="brand">RollWithIt</h1>
+      </div>
       <p class="tagline">
         Generate custom 3D printable embossing rollers made specifically for the snap-together
         <a href="https://makerworld.com/en/models/148536-business-card-embosser-level-up-your-cards" target="_blank" rel="noopener" style="color:var(--brass-hot);text-decoration:underline">Business Card Embosser 3D Model</a>.
@@ -168,11 +171,23 @@ function mount() {
       </div>
     </div>
 
-    <aside class="footer-note">
-      Compatible with the snap-together
-      <a href="https://makerworld.com/en/models/148536-business-card-embosser-level-up-your-cards" target="_blank" rel="noopener">Business Card Embosser — Level up your cards!</a>
-      Print rollers in PLA, vertical if your slicer prefers, no supports. Always dry-fit gears before first emboss. RollWithIt is an independent tool — not affiliated with MakerSpace.Online.
-    </aside>
+    <footer id="main-footer" class="main-footer">
+      <div class="footer-container">
+        <p class="footer-brand">
+          RollWithIt by
+          <a href="https://techjeeper.com" target="_blank" rel="noopener noreferrer" class="footer-link-blue">TechJeeper Designs</a>
+        </p>
+        <div class="footer-links">
+          <a href="https://github.com/TechJeeper/RollWithIt" target="_blank" rel="noopener noreferrer" class="footer-link">GitHub</a>
+          <span class="footer-dot">•</span>
+          <a href="https://discord.gg/BH2ebjcSjz" target="_blank" rel="noopener noreferrer" class="footer-link">Discord</a>
+          <span class="footer-dot">•</span>
+          <a href="https://github.com/TechJeeper/RollWithIt/issues" target="_blank" rel="noopener noreferrer" class="footer-link">Report Issue</a>
+          <span class="footer-dot">•</span>
+          <a href="https://techjeeper.com/support.html" target="_blank" rel="noopener noreferrer" class="btn-support">Support Projects</a>
+        </div>
+      </div>
+    </footer>
   `
 
   const patternCanvas = app.querySelector<HTMLCanvasElement>('#pattern-canvas')!
