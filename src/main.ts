@@ -148,7 +148,7 @@ function mount() {
               ${numberField('driveSize', 'Square drive', state.dimensions.driveSize, 8, 16, 0.1)}
               ${numberField('driveDepth', 'Drive depth', state.dimensions.driveDepth, 4, 20, 0.1)}
               ${numberField('relief', 'Design depth', state.dimensions.relief, 0.2, 3.0, 0.05)}
-              ${numberField('clearance', 'Mating tolerance', state.dimensions.clearance, 0.05, 1.0, 0.05)}
+              ${numberField('clearance', 'Mating clearance (gap)', state.dimensions.clearance, 0.1, 1.5, 0.05)}
               ${numberField('bevel', 'Edge soft (≥0.45)', state.dimensions.bevel, 0.15, 1.2, 0.05)}
             </div>
             <div class="field">
@@ -162,7 +162,7 @@ function mount() {
                   .join('')}
               </select>
             </div>
-            <p class="hint">Defaults match the MakerSpace embosser: Ø30 × 60 mm blank, 12.2 mm drive, 1.2 mm design depth. <em>Mating tolerance</em> controls the fit gap between male &amp; female surfaces (0.15–0.25 mm recommended for tight, crisp embossing).</p>
+            <p class="hint">Defaults match the MakerSpace embosser: Ø30 × 60 mm blank, 12.2 mm drive, 1.2 mm design depth. <em>Mating clearance</em> controls the gap between male &amp; female surfaces (0.40–0.60 mm recommended for a looser fit and smooth card feeding).</p>
             <div class="tool-row">
               <button class="btn btn-primary" id="btn-rebuild" type="button">Rebuild preview</button>
               <button class="btn btn-secondary" id="btn-reset" type="button">Reset defaults</button>
