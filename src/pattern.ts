@@ -241,6 +241,20 @@ const PRESET_DRAWERS: Record<PresetId, (p: PatternDrawContext) => void> = {
   image: drawImagePreset,
 }
 
+function drawReferenceDot(p: PatternDrawContext) {
+  const { ctx, width, pxPerMm } = p
+  const dotRadius = 1.0 * pxPerMm // 2.0 mm diameter reference dot
+  const dotY = 2.5 * pxPerMm // 2.5 mm from top edge (far edge of roller)
+  const dotX = width / 2 // Center along circumference for symmetrical mating
+
+  ctx.save()
+  ctx.fillStyle = '#000000'
+  ctx.beginPath()
+  ctx.arc(dotX, dotY, dotRadius, 0, Math.PI * 2)
+  ctx.fill()
+  ctx.restore()
+}
+
 export function drawPreset(
   preset: PresetId,
   ctx: CanvasRenderingContext2D,
@@ -265,6 +279,10 @@ export function drawPreset(
     if (image && preset === 'image') drawImageOverlay(payload)
   }
   ctx.restore()
+
+  if (settings.referenceMark) {
+    drawReferenceDot(payload)
+  }
 
   if (settings.invert) {
     const img = ctx.getImageData(0, 0, width, height)

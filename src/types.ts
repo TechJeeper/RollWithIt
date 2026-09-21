@@ -20,6 +20,7 @@ export interface PatternSettings {
   text: string
   fontSize: number
   imageOpacity: number
+  referenceMark: boolean
 }
 
 export type PresetId =
@@ -73,6 +74,7 @@ export const DEFAULT_STATE: AppState = {
     text: 'YOUR MARK',
     fontSize: 14,
     imageOpacity: 1,
+    referenceMark: true,
   },
   preset: 'polkadot',
   quality: 'high',

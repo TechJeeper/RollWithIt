@@ -115,9 +115,10 @@ function mount() {
             ${slider('designDepth', 'Design depth mm', state.dimensions.relief, 0.2, 3.0, 0.05)}
           </div>
 
+          <label class="check"><input type="checkbox" id="referenceMark" ${state.pattern.referenceMark ? 'checked' : ''}/> Top reference mark (mating dot at far edge)</label>
           <label class="check"><input type="checkbox" id="invert" ${state.pattern.invert ? 'checked' : ''}/> Invert pattern</label>
           <label class="check"><input type="checkbox" id="mirrorFemale" ${state.pattern.mirrorFemale ? 'checked' : ''}/> Mirror female (recommended)</label>
-          <p class="hint">Tip: click Paint, then draw directly on the unwrapped surface.</p>
+          <p class="hint">Tip: click Paint, then draw directly on the unwrapped surface. The reference dot at the top far edge helps line up male &amp; female rollers when mating.</p>
         </div>
       </section>
 
@@ -423,6 +424,12 @@ function mount() {
       redrawPattern()
       scheduleRebuild()
     }
+  })
+
+  app.querySelector<HTMLInputElement>('#referenceMark')!.addEventListener('change', (e) => {
+    state.pattern.referenceMark = (e.target as HTMLInputElement).checked
+    redrawPattern()
+    scheduleRebuild()
   })
 
   app.querySelector<HTMLInputElement>('#invert')!.addEventListener('change', (e) => {
