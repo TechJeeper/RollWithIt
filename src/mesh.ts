@@ -162,15 +162,7 @@ function capWithSquareDrive(
     let zMid = apertureZ
 
     if (hasReferenceMark && !outerIsMinZ) {
-      let dTheta = Math.abs(theta - Math.PI / 2)
-      if (dTheta > Math.PI) dTheta = 2 * Math.PI - dTheta
-      // We want a highly visible alignment groove that is ~4mm wide
-      const markWidthRad = 4.0 / baseR
-      if (dTheta < markWidthRad) {
-        const u = dTheta / markWidthRad
-        // 2.5 mm deep engraved V-groove indicator on the +Z end cap
-        zMid = apertureZ - 2.5 * (1 - u * u)
-      }
+      // We will add a raised dot instead
     }
 
     mid.push(v(xMid, yMid, zMid))
@@ -205,6 +197,69 @@ function capWithSquareDrive(
       t(floorCenter, floor[c2], floor[c])
     } else {
       t(floorCenter, floor[c], floor[c2])
+    }
+  }
+
+  // Add massive 5mm 3D raised reference mark dot on top end-cap face right above square socket
+  if (hasReferenceMark && !outerIsMinZ) {
+    const dotX = 0
+    const dotY = (half + baseR) / 2
+    const rDot = 2.5 // 5 mm diameter reference dot
+    const hDot = 2.5 // 2.5 mm raised dot height
+    addReferenceDot(v, t, apertureZ, dotX, dotY, rDot, hDot, outerIsMinZ)
+  }
+}
+
+function addReferenceDot(
+  v: (x: number, y: number, z: number) => number,
+  t: (a: number, b: number, c: number) => void,
+  zCap: number,
+  dotX: number,
+  dotY: number,
+  rDot: number,
+  hDot: number,
+  outerIsMinZ: boolean,
+) {
+  const N = 16
+  const baseVerts: number[] = []
+  const topVerts: number[] = []
+  const dir = outerIsMinZ ? -1 : 1
+  const zTop = zCap + dir * hDot
+
+  for (let i = 0; i < N; i++) {
+    const a = (i / N) * Math.PI * 2
+    const x = dotX + Math.cos(a) * rDot
+    const y = dotY + Math.sin(a) * rDot
+    baseVerts.push(v(x, y, zCap))
+    topVerts.push(v(x, y, zTop))
+  }
+
+  const baseCenter = v(dotX, dotY, zCap)
+  const topCenter = v(dotX, dotY, zTop)
+
+  for (let i = 0; i < N; i++) {
+    const i2 = (i + 1) % N
+    const b1 = baseVerts[i]
+    const b2 = baseVerts[i2]
+    const t1 = topVerts[i]
+    const t2 = topVerts[i2]
+
+    if (outerIsMinZ) {
+      // Wall (facing outward -Z)
+      t(b1, t1, t2)
+      t(b1, t2, b2)
+      // Top cap (facing -Z)
+      t(topCenter, t2, t1)
+      // Base cap (facing +Z)
+      t(baseCenter, b1, b2)
+    } else {
+      // Wall (facing outward +Z)
+      t(b1, b2, t2)
+      t(b1, t2, t1)
+      // Top cap (facing +Z)
+      t(topCenter, t1, t2)
+      // Base cap (facing -Z)
+      t(baseCenter, b2, b1)
     }
   }
 }
