@@ -236,6 +236,8 @@ function addReferenceDot(
     topVerts.push(v(x, y, zTop))
   }
 
+  console.log(`addReferenceDot called with zCap=${zCap}, zTop=${zTop}, outerIsMinZ=${outerIsMinZ}`);
+
   const baseCenter = v(dotX, dotY, zCap)
   const topCenter = v(dotX, dotY, zTop)
 

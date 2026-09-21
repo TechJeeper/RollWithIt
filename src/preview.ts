@@ -28,7 +28,8 @@ export class RollerPreview {
     this.scene = new THREE.Scene()
 
     this.camera = new THREE.PerspectiveCamera(42, 1, 0.1, 500)
-    this.camera.position.set(0, 42, 95)
+    // Position camera slightly to the right to reveal the +X end caps
+    this.camera.position.set(35, 42, 85)
 
     this.controls = new OrbitControls(this.camera, canvas)
     this.controls.enableDamping = true
