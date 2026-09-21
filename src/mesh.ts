@@ -15,6 +15,7 @@ interface BuildOptions {
   cols: number
   rows: number
   role: RollerRole
+  referenceMark?: boolean
 }
 
 type V = [number, number, number]
@@ -23,7 +24,7 @@ type V = [number, number, number]
  * Watertight embosser roller (mm). Closed manifold shell for slicer volume checks.
  */
 export function buildRollerMesh(opts: BuildOptions): MeshData {
-  const { dimensions: d, heightmap, cols, rows, role } = opts
+  const { dimensions: d, heightmap, cols, rows, role, referenceMark = true } = opts
   const baseR = d.diameter / 2
   const halfLen = d.length / 2
   const relief =
@@ -72,8 +73,8 @@ export function buildRollerMesh(opts: BuildOptions): MeshData {
   const top = grid[rows - 1]
 
   if (hasDrive) {
-    capWithSquareDrive(bot, -halfLen, -halfLen + depth, half, cols, true, v, t)
-    capWithSquareDrive(top, halfLen, halfLen - depth, half, cols, false, v, t)
+    capWithSquareDrive(bot, -halfLen, -halfLen + depth, half, cols, true, v, t, referenceMark, baseR)
+    capWithSquareDrive(top, halfLen, halfLen - depth, half, cols, false, v, t, false, baseR)
   } else {
     const bc = v(0, 0, -halfLen)
     const tc = v(0, 0, halfLen)
@@ -124,7 +125,7 @@ export function buildRollerMesh(opts: BuildOptions): MeshData {
 }
 
 /**
- * Close one cylinder end with a square drive socket.
+ * Close one cylinder end with a square drive socket and optional end-cap reference mark.
  * `outerIsMinZ`: true for the z=-halfLen end.
  */
 function capWithSquareDrive(
@@ -136,40 +137,68 @@ function capWithSquareDrive(
   outerIsMinZ: boolean,
   v: (x: number, y: number, z: number) => number,
   t: (a: number, b: number, c: number) => void,
+  hasReferenceMark = false,
+  baseR = 15,
 ) {
-  // Project each ring vertex onto the square at apertureZ
   const aperture: number[] = []
+  const mid: number[] = []
   const floor: number[] = []
+
   for (let c = 0; c < cols; c++) {
     const theta = (c / cols) * Math.PI * 2
-    const [x, y] = pointOnSquare(theta, half)
-    aperture.push(v(x, y, apertureZ))
-    floor.push(v(x, y, floorZ))
+    const cosT = Math.cos(theta)
+    const sinT = Math.sin(theta)
+    const [sqX, sqY] = pointOnSquare(theta, half)
+    aperture.push(v(sqX, sqY, apertureZ))
+    floor.push(v(sqX, sqY, floorZ))
+
+    const rSq = Math.hypot(sqX, sqY)
+    const rMid = (rSq + baseR) / 2
+    const xMid = cosT * rMid
+    const yMid = sinT * rMid
+    let zMid = apertureZ
+
+    if (hasReferenceMark && outerIsMinZ) {
+      // 3D reference dimple on top end-cap face right above square socket (theta = 0)
+      const dotX = (half * 1.15 + baseR * 0.85) / 2
+      const dotY = 0
+      const dist = Math.hypot(xMid - dotX, yMid - dotY)
+      const rDot = 2.2 // 4.4 mm diameter dimple zone
+      if (dist < rDot) {
+        const u = dist / rDot
+        zMid = apertureZ + 1.2 * (1 - u * u) // 1.2 mm deep dimple into end face (+Z)
+      }
+    }
+
+    mid.push(v(xMid, yMid, zMid))
   }
 
   for (let c = 0; c < cols; c++) {
     const c2 = (c + 1) % cols
     if (outerIsMinZ) {
-      // Annulus, outward -Z
-      t(ring[c], aperture[c], aperture[c2])
-      t(ring[c], aperture[c2], ring[c2])
-      // Wall into cavity
+      // Annulus face split into inner and outer ring
+      t(aperture[c], mid[c], mid[c2])
+      t(aperture[c], mid[c2], aperture[c2])
+      t(mid[c], ring[c], ring[c2])
+      t(mid[c], ring[c2], mid[c2])
+      // Cavity wall
       t(aperture[c], floor[c], floor[c2])
       t(aperture[c], floor[c2], aperture[c2])
     } else {
-      t(ring[c], ring[c2], aperture[c2])
-      t(ring[c], aperture[c2], aperture[c])
+      t(ring[c], ring[c2], mid[c2])
+      t(ring[c], mid[c2], mid[c])
+      t(mid[c], mid[c2], aperture[c2])
+      t(mid[c], aperture[c2], aperture[c])
       t(aperture[c], aperture[c2], floor[c2])
       t(aperture[c], floor[c2], floor[c])
     }
   }
 
-  // Floor via center (avoids collinear edge fans)
+  // Floor center cap
   const floorCenter = v(0, 0, floorZ)
   for (let c = 0; c < cols; c++) {
     const c2 = (c + 1) % cols
     if (outerIsMinZ) {
-      // Outward toward cavity opening (-Z) ⇒ CW from below
       t(floorCenter, floor[c2], floor[c])
     } else {
       t(floorCenter, floor[c], floor[c2])

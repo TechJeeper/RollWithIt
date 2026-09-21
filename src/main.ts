@@ -115,10 +115,10 @@ function mount() {
             ${slider('designDepth', 'Design depth mm', state.dimensions.relief, 0.2, 3.0, 0.05)}
           </div>
 
-          <label class="check"><input type="checkbox" id="referenceMark" ${state.pattern.referenceMark ? 'checked' : ''}/> Top reference mark (mating dot at far edge)</label>
+          <label class="check"><input type="checkbox" id="referenceMark" ${state.pattern.referenceMark ? 'checked' : ''}/> End-cap reference dot (for mating alignment)</label>
           <label class="check"><input type="checkbox" id="invert" ${state.pattern.invert ? 'checked' : ''}/> Invert pattern</label>
           <label class="check"><input type="checkbox" id="mirrorFemale" ${state.pattern.mirrorFemale ? 'checked' : ''}/> Mirror female (recommended)</label>
-          <p class="hint">Tip: click Paint, then draw directly on the unwrapped surface. The reference dot at the top far edge helps line up male &amp; female rollers when mating.</p>
+          <p class="hint">Tip: click Paint, then draw directly on the unwrapped surface. The 3D reference dot is engraved on the top end face above the square socket to align male &amp; female rollers when mating.</p>
         </div>
       </section>
 
@@ -323,6 +323,7 @@ function mount() {
         cols,
         rows,
         role: 'male',
+        referenceMark: state.pattern.referenceMark,
       })
       const female = buildRollerMesh({
         dimensions: state.dimensions,
@@ -330,6 +331,7 @@ function mount() {
         cols,
         rows,
         role: 'female',
+        referenceMark: state.pattern.referenceMark,
       })
       if (forExport) {
         exportMale = male
