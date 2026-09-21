@@ -141,27 +141,55 @@ function capWithSquareDrive(
   baseR = 15,
 ) {
   const aperture: number[] = []
+  const mid: number[] = []
   const floor: number[] = []
+
+  // Target column for reference mark directly above flat side of square socket (theta = PI/2)
+  const cMark = Math.round(cols / 4)
 
   for (let c = 0; c < cols; c++) {
     const theta = (c / cols) * Math.PI * 2
+    const cosT = Math.cos(theta)
+    const sinT = Math.sin(theta)
     const [sqX, sqY] = pointOnSquare(theta, half)
     aperture.push(v(sqX, sqY, apertureZ))
     floor.push(v(sqX, sqY, floorZ))
+
+    const rSq = Math.hypot(sqX, sqY)
+    const rMid = (rSq + baseR) / 2
+    const xMid = cosT * rMid
+    const yMid = sinT * rMid
+    let zMid = apertureZ
+
+    if (hasReferenceMark && outerIsMinZ) {
+      let dCol = Math.abs(c - cMark)
+      if (dCol > cols / 2) dCol = cols - dCol
+      if (dCol <= 3) {
+        const u = dCol / 3.5
+        // 1.8 mm deep 3D engraved reference notch into top end-cap face (+Z)
+        zMid = apertureZ + 1.8 * (1 - u * u)
+      }
+    }
+
+    mid.push(v(xMid, yMid, zMid))
   }
 
   for (let c = 0; c < cols; c++) {
     const c2 = (c + 1) % cols
     if (outerIsMinZ) {
-      // Annulus, outward -Z
-      t(ring[c], aperture[c], aperture[c2])
-      t(ring[c], aperture[c2], ring[c2])
+      // Annulus split into 2 concentric rings around the mid ring
+      t(aperture[c], mid[c], mid[c2])
+      t(aperture[c], mid[c2], aperture[c2])
+      t(mid[c], ring[c], ring[c2])
+      t(mid[c], ring[c2], mid[c2])
       // Wall into cavity
       t(aperture[c], floor[c], floor[c2])
       t(aperture[c], floor[c2], aperture[c2])
     } else {
-      t(ring[c], ring[c2], aperture[c2])
-      t(ring[c], aperture[c2], aperture[c])
+      t(ring[c], ring[c2], mid[c2])
+      t(ring[c], mid[c2], mid[c])
+      t(mid[c], mid[c2], aperture[c2])
+      t(mid[c], aperture[c2], aperture[c])
       t(aperture[c], aperture[c2], floor[c2])
       t(aperture[c], floor[c2], floor[c])
     }
@@ -175,69 +203,6 @@ function capWithSquareDrive(
       t(floorCenter, floor[c2], floor[c])
     } else {
       t(floorCenter, floor[c], floor[c2])
-    }
-  }
-
-  // Add 3D raised reference mark dot on top end-cap face right above square socket
-  if (hasReferenceMark && outerIsMinZ) {
-    const dotX = 0
-    const dotY = half + (baseR - half) * 0.5
-    const rDot = 1.8 // 3.6 mm diameter reference dot
-    const hDot = 1.5 // 1.5 mm raised dot height
-    addReferenceDot(v, t, apertureZ, dotX, dotY, rDot, hDot, outerIsMinZ)
-  }
-}
-
-function addReferenceDot(
-  v: (x: number, y: number, z: number) => number,
-  t: (a: number, b: number, c: number) => void,
-  zCap: number,
-  dotX: number,
-  dotY: number,
-  rDot: number,
-  hDot: number,
-  outerIsMinZ: boolean,
-) {
-  const N = 12
-  const baseVerts: number[] = []
-  const topVerts: number[] = []
-  const dir = outerIsMinZ ? -1 : 1
-  const zTop = zCap + dir * hDot
-
-  for (let i = 0; i < N; i++) {
-    const a = (i / N) * Math.PI * 2
-    const x = dotX + Math.cos(a) * rDot
-    const y = dotY + Math.sin(a) * rDot
-    baseVerts.push(v(x, y, zCap))
-    topVerts.push(v(x, y, zTop))
-  }
-
-  const baseCenter = v(dotX, dotY, zCap)
-  const topCenter = v(dotX, dotY, zTop)
-
-  for (let i = 0; i < N; i++) {
-    const i2 = (i + 1) % N
-    const b1 = baseVerts[i]
-    const b2 = baseVerts[i2]
-    const t1 = topVerts[i]
-    const t2 = topVerts[i2]
-
-    if (outerIsMinZ) {
-      // Wall (facing outward -Z)
-      t(b1, t2, t1)
-      t(b1, b2, t2)
-      // Top cap (facing -Z)
-      t(topCenter, t1, t2)
-      // Base cap (facing +Z)
-      t(baseCenter, b2, b1)
-    } else {
-      // Wall (facing outward +Z)
-      t(b1, t1, t2)
-      t(b1, t2, b2)
-      // Top cap (facing +Z)
-      t(topCenter, t2, t1)
-      // Base cap (facing -Z)
-      t(baseCenter, b1, b2)
     }
   }
 }
