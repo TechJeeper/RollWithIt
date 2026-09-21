@@ -243,15 +243,40 @@ const PRESET_DRAWERS: Record<PresetId, (p: PatternDrawContext) => void> = {
 
 function drawReferenceDot(p: PatternDrawContext) {
   const { ctx, width, pxPerMm } = p
-  const dotRadius = 1.0 * pxPerMm // 2.0 mm diameter reference dot
-  const dotY = 2.5 * pxPerMm // 2.5 mm from top edge (far edge of roller)
   const dotX = width / 2 // Center along circumference for symmetrical mating
+  const dotY = 3.2 * pxPerMm // 3.2 mm from top edge (far edge of roller)
+  const haloRadius = 3.5 * pxPerMm // White knockout halo to isolate from background pattern
+  const dotRadius = 1.8 * pxPerMm // Prominent 3.6 mm diameter reference dot
 
   ctx.save()
+
+  // 1. White knockout halo to clear any pattern lines/dots in the reference zone
+  ctx.fillStyle = '#ffffff'
+  ctx.beginPath()
+  ctx.arc(dotX, dotY, haloRadius, 0, Math.PI * 2)
+  ctx.fill()
+
+  // 2. High-contrast outer ring border
+  ctx.strokeStyle = '#000000'
+  ctx.lineWidth = Math.max(1, 0.4 * pxPerMm)
+  ctx.beginPath()
+  ctx.arc(dotX, dotY, haloRadius - 0.2 * pxPerMm, 0, Math.PI * 2)
+  ctx.stroke()
+
+  // 3. Central reference dot
   ctx.fillStyle = '#000000'
   ctx.beginPath()
   ctx.arc(dotX, dotY, dotRadius, 0, Math.PI * 2)
   ctx.fill()
+
+  // 4. Clear "TOP" label text on canvas next to dot
+  const fontSize = Math.max(10, Math.round(3.0 * pxPerMm))
+  ctx.font = `700 ${fontSize}px sans-serif`
+  ctx.textAlign = 'right'
+  ctx.textBaseline = 'middle'
+  ctx.fillStyle = '#000000'
+  ctx.fillText('TOP ', dotX - haloRadius - 1 * pxPerMm, dotY)
+
   ctx.restore()
 }
 
