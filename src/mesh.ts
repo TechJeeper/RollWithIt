@@ -73,8 +73,8 @@ export function buildRollerMesh(opts: BuildOptions): MeshData {
   const top = grid[rows - 1]
 
   if (hasDrive) {
-    capWithSquareDrive(bot, -halfLen, -halfLen + depth, half, cols, true, v, t, referenceMark, baseR)
-    capWithSquareDrive(top, halfLen, halfLen - depth, half, cols, false, v, t, false, baseR)
+    capWithSquareDrive(bot, -halfLen, -halfLen + depth, half, cols, true, v, t, false, baseR)
+    capWithSquareDrive(top, halfLen, halfLen - depth, half, cols, false, v, t, referenceMark, baseR)
   } else {
     const bc = v(0, 0, -halfLen)
     const tc = v(0, 0, halfLen)
@@ -161,13 +161,15 @@ function capWithSquareDrive(
     const yMid = sinT * rMid
     let zMid = apertureZ
 
-    if (hasReferenceMark && outerIsMinZ) {
-      let dCol = Math.abs(c - cMark)
-      if (dCol > cols / 2) dCol = cols - dCol
-      if (dCol <= 3) {
-        const u = dCol / 3.5
-        // 1.8 mm deep 3D engraved reference notch into top end-cap face (+Z)
-        zMid = apertureZ + 1.8 * (1 - u * u)
+    if (hasReferenceMark && !outerIsMinZ) {
+      let dTheta = Math.abs(theta - Math.PI / 2)
+      if (dTheta > Math.PI) dTheta = 2 * Math.PI - dTheta
+      // We want a highly visible alignment groove that is ~4mm wide
+      const markWidthRad = 4.0 / baseR
+      if (dTheta < markWidthRad) {
+        const u = dTheta / markWidthRad
+        // 2.5 mm deep engraved V-groove indicator on the +Z end cap
+        zMid = apertureZ - 2.5 * (1 - u * u)
       }
     }
 
