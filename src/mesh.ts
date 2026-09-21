@@ -73,7 +73,7 @@ export function buildRollerMesh(opts: BuildOptions): MeshData {
   const top = grid[rows - 1]
 
   if (hasDrive) {
-    capWithSquareDrive(bot, -halfLen, -halfLen + depth, half, cols, true, v, t, false, baseR)
+    capWithSquareDrive(bot, -halfLen, -halfLen + depth, half, cols, true, v, t, referenceMark, baseR)
     capWithSquareDrive(top, halfLen, halfLen - depth, half, cols, false, v, t, referenceMark, baseR)
   } else {
     const bc = v(0, 0, -halfLen)
@@ -105,7 +105,9 @@ export function buildRollerMesh(opts: BuildOptions): MeshData {
   }
   const indices = new Uint32Array(clean)
 
-  if (signedVolume(positions, indices) < 0) {
+  const vol = signedVolume(positions, indices)
+  console.log('SIGNED VOLUME:', vol)
+  if (vol < 0) {
     for (let i = 0; i < indices.length; i += 3) {
       const tmp = indices[i + 1]
       indices[i + 1] = indices[i + 2]
@@ -200,12 +202,12 @@ function capWithSquareDrive(
     }
   }
 
-  // Add massive 5mm 3D raised reference mark dot on top end-cap face right above square socket
-  if (hasReferenceMark && !outerIsMinZ) {
+  // Add massive 6mm 3D raised reference mark dot on end-cap face right above square socket
+  if (hasReferenceMark) {
     const dotX = 0
     const dotY = (half + baseR) / 2
-    const rDot = 2.5 // 5 mm diameter reference dot
-    const hDot = 2.5 // 2.5 mm raised dot height
+    const rDot = 3.0 // 6 mm diameter reference dot
+    const hDot = 3.0 // 3 mm raised dot height
     addReferenceDot(v, t, apertureZ, dotX, dotY, rDot, hDot, outerIsMinZ)
   }
 }
